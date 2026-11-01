@@ -17,6 +17,19 @@ import { InspectionRecord, Zone, InspectorRole } from './types';
 import { INITIAL_INSPECTIONS, INITIAL_ZONES } from './data/mockData';
 import { isSameDay } from './utils/helpers';
 import { Shield, Building2, CheckCircle2 } from 'lucide-react';
+import {
+  testConnection,
+  seedZonesIfEmpty,
+  subscribeToInspections,
+  subscribeToZones,
+  addInspectionOnline,
+  updateInspectionOnline,
+  deleteInspectionOnline,
+  resetAllInspectionsOnline,
+  addZoneOnline,
+  updateZoneOnline,
+  deleteZoneOnline,
+} from './firebase';
 
 const STORAGE_INSPECTIONS_KEY = 'ranot_inspections_v7';
 const STORAGE_ZONES_KEY = 'ranot_zones_v7';
@@ -26,6 +39,8 @@ const STORAGE_ADMIN_PASSWORD_KEY = 'ranot_admin_password_v7';
 const STORAGE_ADMIN_AUTH_KEY = 'ranot_admin_auth_v7';
 
 export default function App() {
+  const [isOnline, setIsOnline] = useState<boolean>(false);
+
   // Load initial data from localStorage with fallback to default mock data
   const [inspections, setInspections] = useState<InspectionRecord[]>(() => {
     try {
@@ -107,7 +122,50 @@ export default function App() {
     title: '',
   });
 
-  // Save changes to localStorage
+  // Firebase online initialization & real-time sync
+  useEffect(() => {
+    let isMounted = true;
+
+    // Check connection & seed initial zones if needed
+    testConnection().then((connected) => {
+      if (isMounted) setIsOnline(connected);
+      seedZonesIfEmpty(INITIAL_ZONES);
+    });
+
+    // Real-time listener for inspections
+    const unsubscribeInspections = subscribeToInspections(
+      (onlineInspections) => {
+        if (isMounted) {
+          setInspections(onlineInspections);
+          setIsOnline(true);
+        }
+      },
+      (err) => {
+        console.warn('Realtime inspections sync error:', err);
+      }
+    );
+
+    // Real-time listener for zones
+    const unsubscribeZones = subscribeToZones(
+      (onlineZones) => {
+        if (isMounted && onlineZones.length > 0) {
+          setZones(onlineZones);
+          setIsOnline(true);
+        }
+      },
+      (err) => {
+        console.warn('Realtime zones sync error:', err);
+      }
+    );
+
+    return () => {
+      isMounted = false;
+      unsubscribeInspections();
+      unsubscribeZones();
+    };
+  }, []);
+
+  // Save changes to localStorage as local cache
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_INSPECTIONS_KEY, JSON.stringify(inspections));
@@ -190,7 +248,7 @@ export default function App() {
     setAdminPassword(newPass);
   };
 
-  // Add new inspection
+  // Add new inspection online & locally
   const handleSaveRecord = (recordData: Omit<InspectionRecord, 'id' | 'date'>) => {
     const newRecord: InspectionRecord = {
       ...recordData,
@@ -198,22 +256,42 @@ export default function App() {
       date: new Date().toISOString(),
     };
     setInspections((prev) => [newRecord, ...prev]);
+    addInspectionOnline(newRecord).catch((err) =>
+      console.error('Error saving record online:', err)
+    );
   };
 
-  // Delete an inspection
+  // Delete an inspection online & locally
   const handleDeleteRecord = (id: string) => {
     setInspections((prev) => prev.filter((r) => r.id !== id));
+    deleteInspectionOnline(id).catch((err) =>
+      console.error('Error deleting record online:', err)
+    );
   };
 
   // Toggle resolved status for failed inspections
   const handleToggleResolved = (id: string) => {
+    const target = inspections.find((r) => r.id === id);
+    if (!target) return;
+    const newResolved = !target.resolved;
+    const resolvedAt = newResolved ? new Date().toISOString() : undefined;
+    const resolvedBy = newResolved ? inspectorName : undefined;
+
     setInspections((prev) =>
       prev.map((r) => {
         if (r.id === id) {
-          return { ...r, resolved: !r.resolved };
+          return { ...r, resolved: newResolved, resolvedAt, resolvedBy };
         }
         return r;
       })
+    );
+
+    updateInspectionOnline(id, {
+      resolved: newResolved,
+      ...(resolvedAt ? { resolvedAt } : {}),
+      ...(resolvedBy ? { resolvedBy } : {}),
+    }).catch((err) =>
+      console.error('Error updating resolved status online:', err)
     );
   };
 
@@ -224,27 +302,41 @@ export default function App() {
       id: `z-${Date.now()}`,
     };
     setZones((prev) => [...prev, newZone]);
+    addZoneOnline(newZone).catch((err) =>
+      console.error('Error adding zone online:', err)
+    );
   };
 
   // Update zone (Admin only)
   const handleUpdateZone = (updatedZone: Zone) => {
     setZones((prev) => prev.map((z) => (z.id === updatedZone.id ? updatedZone : z)));
+    updateZoneOnline(updatedZone).catch((err) =>
+      console.error('Error updating zone online:', err)
+    );
   };
 
   // Delete zone (Admin only)
   const handleDeleteZone = (zoneId: string) => {
     setZones((prev) => prev.filter((z) => z.id !== zoneId));
+    deleteZoneOnline(zoneId).catch((err) =>
+      console.error('Error deleting zone online:', err)
+    );
   };
 
   // Reset today's inspections (Admin only)
   const handleResetTodayInspections = () => {
     const today = new Date();
+    const todayRecs = inspections.filter((r) => isSameDay(r.date, today));
     setInspections((prev) => prev.filter((r) => !isSameDay(r.date, today)));
+    todayRecs.forEach((r) => deleteInspectionOnline(r.id).catch(console.error));
   };
 
   // Reset all inspection records (Admin only)
   const handleResetAllInspections = () => {
     setInspections([]);
+    resetAllInspectionsOnline().catch((err) =>
+      console.error('Error resetting inspections online:', err)
+    );
   };
 
   // Reset demo data
@@ -291,6 +383,7 @@ export default function App() {
         onOpenAdminLogin={() => setShowAdminLoginModal(true)}
         onOpenAdminSettings={() => setShowAdminSettingsModal(true)}
         onLogoutAdmin={handleLogoutAdmin}
+        isOnline={isOnline}
       />
 
       {/* Navigation Bar */}

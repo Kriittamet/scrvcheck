@@ -1,0 +1,134 @@
+{
+  "entities": {
+    "Inspection": {
+      "title": "Inspection Record",
+      "description": "Cleaning zone inspection result submitted by student committee or teacher",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique inspection identifier",
+          "maxLength": 128
+        },
+        "zoneId": {
+          "type": "string",
+          "description": "ID of the inspected zone",
+          "maxLength": 128
+        },
+        "zoneName": {
+          "type": "string",
+          "description": "Name of the zone",
+          "maxLength": 200
+        },
+        "assignedClass": {
+          "type": "string",
+          "description": "Class responsible for this zone",
+          "maxLength": 50
+        },
+        "inspectorRole": {
+          "type": "string",
+          "description": "Role of inspector",
+          "enum": ["committee", "admin"]
+        },
+        "inspectorName": {
+          "type": "string",
+          "description": "Name of the inspector",
+          "maxLength": 100
+        },
+        "date": {
+          "type": "string",
+          "description": "Inspection timestamp (ISO string)",
+          "maxLength": 64
+        },
+        "status": {
+          "type": "string",
+          "description": "Inspection outcome",
+          "enum": ["pass", "fail"]
+        },
+        "note": {
+          "type": "string",
+          "description": "Observations or points needing improvement",
+          "maxLength": 1000
+        },
+        "image": {
+          "type": "string",
+          "description": "Photo thumbnail attachment",
+          "maxLength": 500000
+        },
+        "resolved": {
+          "type": "boolean",
+          "description": "Whether reported issue has been cleaned/resolved"
+        },
+        "resolvedAt": {
+          "type": "string",
+          "description": "Timestamp when marked resolved",
+          "maxLength": 64
+        },
+        "resolvedBy": {
+          "type": "string",
+          "description": "Name of person who verified resolution",
+          "maxLength": 100
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp",
+          "maxLength": 64
+        }
+      },
+      "required": ["zoneId", "zoneName", "assignedClass", "inspectorRole", "inspectorName", "date", "status"]
+    },
+    "Zone": {
+      "title": "Cleaning Zone",
+      "description": "School cleaning zone assigned to a specific class",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique zone ID",
+          "maxLength": 128
+        },
+        "name": {
+          "type": "string",
+          "description": "Zone name and scope",
+          "maxLength": 200
+        },
+        "assignedClass": {
+          "type": "string",
+          "description": "Assigned class (e.g. ม.1/1, ปวช.1)",
+          "maxLength": 50
+        },
+        "locationArea": {
+          "type": "string",
+          "description": "Building or campus area",
+          "maxLength": 200
+        },
+        "advisorTeacher": {
+          "type": "string",
+          "description": "Advisor teacher name",
+          "maxLength": 150
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed cleaning duties description",
+          "maxLength": 1000
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp of last zone update",
+          "maxLength": 64
+        }
+      },
+      "required": ["id", "name", "assignedClass", "locationArea", "advisorTeacher"]
+    }
+  },
+  "firestore": {
+    "/inspections/{inspectionId}": {
+      "schema": "Inspection",
+      "description": "Collection of all cleaning inspection logs"
+    },
+    "/zones/{zoneId}": {
+      "schema": "Zone",
+      "description": "Collection of 45 school cleaning zones"
+    }
+  }
+}

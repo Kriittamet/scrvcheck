@@ -1,0 +1,36 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128;
+    }
+
+    // Inspections collection: school cleaning reports
+    match /inspections/{inspectionId} {
+      allow read: if true;
+      allow create: if isValidId(inspectionId)
+        && request.resource.data.zoneId is string
+        && request.resource.data.zoneName is string
+        && request.resource.data.assignedClass is string
+        && (request.resource.data.status == 'pass' || request.resource.data.status == 'fail');
+      allow update: if isValidId(inspectionId);
+      allow delete: if isValidId(inspectionId);
+    }
+
+    // Zones collection: school cleaning areas and assigned classes
+    match /zones/{zoneId} {
+      allow read: if true;
+      allow create: if isValidId(zoneId)
+        && request.resource.data.name is string
+        && request.resource.data.assignedClass is string;
+      allow update: if isValidId(zoneId);
+      allow delete: if isValidId(zoneId);
+    }
+  }
+}

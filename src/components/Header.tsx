@@ -20,6 +20,7 @@ interface HeaderProps {
   onOpenAdminLogin: () => void;
   onOpenAdminSettings: () => void;
   onLogoutAdmin: () => void;
+  isOnline?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -32,6 +33,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAdminLogin,
   onOpenAdminSettings,
   onLogoutAdmin,
+  isOnline = true,
 }) => {
   const getRoleIcon = (role: InspectorRole) => {
     switch (role) {
@@ -60,13 +62,23 @@ export const Header: React.FC<HeaderProps> = ({
             <School className="w-6 h-6 text-blue-200" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-lg sm:text-xl font-bold tracking-tight text-white leading-tight">
                 โรงเรียนระโนดวิทยา
               </h1>
               <span className="text-[11px] font-medium bg-blue-700/80 text-blue-100 px-2 py-0.5 rounded-full border border-blue-400/30">
                 สพม.สงขลา สตูล
               </span>
+              {isOnline ? (
+                <span className="text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 px-2.5 py-0.5 rounded-full border border-emerald-400/40 flex items-center gap-1.5 shadow-xs">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span>บันทึกออนไลน์ (Cloud)</span>
+                </span>
+              ) : (
+                <span className="text-[11px] font-medium bg-amber-500/20 text-amber-200 px-2 py-0.5 rounded-full border border-amber-400/30">
+                  กำลังเชื่อมต่อออนไลน์...
+                </span>
+              )}
             </div>
             <p className="text-xs text-blue-200/90 font-light">
               ระบบตรวจเขตพื้นที่ทำความสะอาดและความเป็นระเบียบเรียบร้อย
