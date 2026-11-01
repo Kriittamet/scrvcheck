@@ -11,6 +11,9 @@ import {
   Trash2,
   Edit,
   Shield,
+  Image as ImageIcon,
+  ZoomIn,
+  Maximize2,
 } from 'lucide-react';
 import { Zone } from '../types';
 
@@ -36,6 +39,7 @@ export const ZoneManagement: React.FC<ZoneManagementProps> = ({
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [editingZone, setEditingZone] = useState<Zone | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [isMapModalOpen, setIsMapModalOpen] = useState<boolean>(false);
 
   // Add Zone Form State
   const [name, setName] = useState<string>('');
@@ -160,6 +164,45 @@ export const ZoneManagement: React.FC<ZoneManagementProps> = ({
             {isAdminAuthenticated ? <Plus className="w-4 h-4" /> : <Lock className="w-3.5 h-3.5 text-blue-200" />}
             <span>{isAdminAuthenticated ? 'เพิ่มเขตพื้นที่ใหม่' : 'เพิ่มเขตพื้นที่ (แอดมิน)'}</span>
           </button>
+        </div>
+      </div>
+
+      {/* Master Zone Map Card */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="p-4 sm:p-5 bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 text-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-blue-300 border border-white/10">
+              <ImageIcon className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-bold text-base leading-tight">แผนผังเขตพื้นที่ทำความสะอาด โรงเรียนระโนดวิทยา</h3>
+              <p className="text-xs text-blue-200/80">แผนผังรวมแสดงตำแหน่งเขตรับผิดชอบของ ม.1 - ม.6 และ ปวช.</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setIsMapModalOpen(true)}
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold shadow-xs transition cursor-pointer self-start sm:self-auto"
+          >
+            <Maximize2 className="w-3.5 h-3.5" />
+            <span>ขยายดูแผนผังขนาดเต็ม</span>
+          </button>
+        </div>
+
+        {/* Map Image Banner Container */}
+        <div
+          className="relative group bg-slate-100 flex items-center justify-center p-2 sm:p-4 cursor-pointer overflow-hidden max-h-[480px]"
+          onClick={() => setIsMapModalOpen(true)}
+          title="คลิกเพื่อดูรูปภาพแผนผังขนาดเต็ม"
+        >
+          <img
+            src="/school_zone_map.jpg"
+            alt="แผนผังเขตพื้นที่ทำความสะอาด โรงเรียนระโนดวิทยา"
+            className="w-full max-h-[440px] object-contain rounded-xl shadow-xs transition duration-300 group-hover:scale-[1.01]"
+          />
+          <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition duration-200 flex items-center justify-center gap-2 text-white font-bold text-sm backdrop-blur-xs">
+            <ZoomIn className="w-5 h-5" />
+            <span>คลิกเพื่อดูแผนผังขนาดใหญ่ (Full View)</span>
+          </div>
         </div>
       </div>
 
@@ -467,6 +510,48 @@ export const ZoneManagement: React.FC<ZoneManagementProps> = ({
                 </div>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Fullscreen Map Modal */}
+      {isMapModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => setIsMapModalOpen(false)}
+        >
+          <div
+            className="relative bg-white rounded-2xl max-w-5xl w-full p-4 sm:p-5 shadow-2xl border border-slate-200 flex flex-col max-h-[92vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🗺️</span>
+                <div>
+                  <h3 className="font-bold text-slate-900 text-sm sm:text-base">
+                    แผนผังเขตพื้นที่ทำความสะอาด โรงเรียนระโนดวิทยา
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    แสดงผังการจัดแบ่งเขตพื้นที่ทำความสะอาด ม.1 - ม.6 และ ปวช.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsMapModalOpen(false)}
+                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition"
+                title="ปิด"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="mt-3 flex-1 overflow-auto bg-slate-100 rounded-xl p-2 flex items-center justify-center">
+              <img
+                src="/school_zone_map.jpg"
+                alt="แผนผังเขตพื้นที่ทำความสะอาด โรงเรียนระโนดวิทยา"
+                className="max-w-full max-h-[75vh] object-contain rounded-lg shadow-sm"
+              />
+            </div>
           </div>
         </div>
       )}
