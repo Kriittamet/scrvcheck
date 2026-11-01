@@ -13,6 +13,7 @@ import {
   Eye,
   Trash2,
   CheckCheck,
+  RotateCcw,
 } from 'lucide-react';
 import { InspectionRecord } from '../types';
 import {
@@ -29,6 +30,9 @@ interface DailyReportProps {
   onToggleResolved: (id: string) => void;
   onViewImage: (imageUrl: string, title: string, subtitle?: string) => void;
   onNavigateToRecord: () => void;
+  isAdminAuthenticated: boolean;
+  onOpenAdminLogin: () => void;
+  onResetTodayInspections: () => void;
 }
 
 export const DailyReport: React.FC<DailyReportProps> = ({
@@ -37,6 +41,9 @@ export const DailyReport: React.FC<DailyReportProps> = ({
   onToggleResolved,
   onViewImage,
   onNavigateToRecord,
+  isAdminAuthenticated,
+  onOpenAdminLogin,
+  onResetTodayInspections,
 }) => {
   const [statusFilter, setStatusFilter] = useState<'all' | 'pass' | 'fail'>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -125,6 +132,32 @@ export const DailyReport: React.FC<DailyReportProps> = ({
           >
             <Printer className="w-4 h-4" />
             <span>พิมพ์รายงาน</span>
+          </button>
+
+          {/* Admin Reset Daily Summary Button */}
+          <button
+            onClick={() => {
+              if (!isAdminAuthenticated) {
+                onOpenAdminLogin();
+              } else {
+                if (confirm('คุณต้องการรีเซ็ตผลการตรวจของวันนี้ทั้งหมดใช่หรือไม่?')) {
+                  onResetTodayInspections();
+                }
+              }
+            }}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition border cursor-pointer ${
+              isAdminAuthenticated
+                ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 border-rose-200'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border-slate-200'
+            }`}
+            title={
+              isAdminAuthenticated
+                ? 'รีเซ็ตข้อมูลผลการตรวจของวันนี้ทั้งหมด (เฉพาะแอดมิน)'
+                : 'เข้าสู่ระบบแอดมินเพื่อรีเซ็ตผลการตรวจ'
+            }
+          >
+            <RotateCcw className="w-4 h-4" />
+            <span>{isAdminAuthenticated ? 'รีเซ็ตผลตรวจวันนี้' : 'รีเซ็ตผล (แอดมิน)'}</span>
           </button>
         </div>
       </div>

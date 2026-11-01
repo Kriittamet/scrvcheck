@@ -2,7 +2,6 @@ import React from 'react';
 import {
   School,
   ShieldCheck,
-  GraduationCap,
   Shield,
   Settings,
   LogOut,
@@ -36,8 +35,6 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const getRoleIcon = (role: InspectorRole) => {
     switch (role) {
-      case 'student':
-        return <GraduationCap className="w-4 h-4 text-sky-200" />;
       case 'committee':
         return <ShieldCheck className="w-4 h-4 text-amber-200" />;
       case 'admin':
@@ -87,7 +84,6 @@ export const Header: React.FC<HeaderProps> = ({
               onChange={(e) => handleRoleSelect(e.target.value as InspectorRole)}
               className="bg-blue-800/90 hover:bg-blue-700 text-white text-xs font-medium rounded-lg px-2.5 py-1.5 border border-blue-500/40 outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer transition"
             >
-              <option value="student">นักเรียนเวร / สารวัตรนักเรียน</option>
               <option value="committee">กรรมการสภานักเรียน</option>
               <option value="admin">
                 {isAdminAuthenticated ? '🛡️ ผู้ดูแลระบบ (เข้าสู่ระบบแล้ว)' : '🔒 ผู้ดูแลระบบ (ต้องใส่รหัสผ่าน)'}

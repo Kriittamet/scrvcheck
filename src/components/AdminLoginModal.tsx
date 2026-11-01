@@ -26,7 +26,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
     setError(null);
 
     // Validate password (compare with active password or fallback default)
-    const validPassword = adminPasswordHash || 'admin1234';
+    const validPassword = adminPasswordHash || 'scrv90140';
 
     if (password === validPassword) {
       setIsSuccess(true);
@@ -111,23 +111,6 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
-          </div>
-
-          {/* Default password hint for easy testing */}
-          <div className="p-3 rounded-xl bg-blue-50/80 border border-blue-200/60 text-blue-900 text-xs flex items-center justify-between">
-            <div>
-              <span className="font-semibold text-blue-800">รหัสผ่านเริ่มต้น:</span>{' '}
-              <code className="bg-white px-2 py-0.5 rounded border border-blue-300 font-mono text-blue-700 font-bold">
-                {adminPasswordHash || 'admin1234'}
-              </code>
-            </div>
-            <button
-              type="button"
-              onClick={() => setPassword(adminPasswordHash || 'admin1234')}
-              className="text-[11px] text-blue-700 hover:text-blue-900 underline font-medium"
-            >
-              เติมรหัสอัตโนมัติ
-            </button>
           </div>
 
           {/* Action buttons */}

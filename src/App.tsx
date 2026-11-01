@@ -18,12 +18,12 @@ import { INITIAL_INSPECTIONS, INITIAL_ZONES } from './data/mockData';
 import { isSameDay } from './utils/helpers';
 import { Shield, Building2, CheckCircle2 } from 'lucide-react';
 
-const STORAGE_INSPECTIONS_KEY = 'ranot_inspections_v2';
-const STORAGE_ZONES_KEY = 'ranot_zones_v2';
-const STORAGE_ROLE_KEY = 'ranot_role_v2';
-const STORAGE_NAME_KEY = 'ranot_inspector_name_v2';
-const STORAGE_ADMIN_PASSWORD_KEY = 'ranot_admin_password_v2';
-const STORAGE_ADMIN_AUTH_KEY = 'ranot_admin_auth_v2';
+const STORAGE_INSPECTIONS_KEY = 'ranot_inspections_v7';
+const STORAGE_ZONES_KEY = 'ranot_zones_v7';
+const STORAGE_ROLE_KEY = 'ranot_role_v7';
+const STORAGE_NAME_KEY = 'ranot_inspector_name_v7';
+const STORAGE_ADMIN_PASSWORD_KEY = 'ranot_admin_password_v7';
+const STORAGE_ADMIN_AUTH_KEY = 'ranot_admin_auth_v7';
 
 export default function App() {
   // Load initial data from localStorage with fallback to default mock data
@@ -50,23 +50,23 @@ export default function App() {
   const [currentRole, setCurrentRole] = useState<InspectorRole>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_ROLE_KEY) as string;
-      if (saved === 'student' || saved === 'committee' || saved === 'admin') {
+      if (saved === 'committee' || saved === 'admin') {
         return saved;
       }
     } catch {
       // fallback
     }
-    return 'student';
+    return 'committee';
   });
 
   const [inspectorName, setInspectorName] = useState<string>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_NAME_KEY);
-      if (saved) return saved;
+      if (saved && saved !== 'นักเรียนเวรประจำวัน') return saved;
     } catch {
       // fallback
     }
-    return 'นักเรียนเวรประจำวัน';
+    return 'กรรมการสภานักเรียน';
   });
 
   // Admin authentication state & password
@@ -77,7 +77,7 @@ export default function App() {
     } catch {
       // fallback
     }
-    return 'admin1234';
+    return 'scrv90140';
   });
 
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(() => {
@@ -160,11 +160,8 @@ export default function App() {
   const handleRoleChange = (role: InspectorRole) => {
     setCurrentRole(role);
     switch (role) {
-      case 'student':
-        setInspectorName('นักเรียนเวรประจำวัน');
-        break;
       case 'committee':
-        setInspectorName('สารวัตรนักเรียนฝ่ายอาคาร');
+        setInspectorName('กรรมการสภานักเรียน');
         break;
       case 'admin':
         setInspectorName('ผู้ดูแลระบบงานอาคารสถานที่');
@@ -183,8 +180,8 @@ export default function App() {
   const handleLogoutAdmin = () => {
     setIsAdminAuthenticated(false);
     if (currentRole === 'admin') {
-      setCurrentRole('student');
-      setInspectorName('นักเรียนเวรประจำวัน');
+      setCurrentRole('committee');
+      setInspectorName('กรรมการสภานักเรียน');
     }
   };
 
@@ -237,6 +234,17 @@ export default function App() {
   // Delete zone (Admin only)
   const handleDeleteZone = (zoneId: string) => {
     setZones((prev) => prev.filter((z) => z.id !== zoneId));
+  };
+
+  // Reset today's inspections (Admin only)
+  const handleResetTodayInspections = () => {
+    const today = new Date();
+    setInspections((prev) => prev.filter((r) => !isSameDay(r.date, today)));
+  };
+
+  // Reset all inspection records (Admin only)
+  const handleResetAllInspections = () => {
+    setInspections([]);
   };
 
   // Reset demo data
@@ -313,6 +321,9 @@ export default function App() {
             onToggleResolved={handleToggleResolved}
             onViewImage={handleViewImage}
             onNavigateToRecord={() => setActiveTab('record')}
+            isAdminAuthenticated={isAdminAuthenticated}
+            onOpenAdminLogin={() => setShowAdminLoginModal(true)}
+            onResetTodayInspections={handleResetTodayInspections}
           />
         )}
 
@@ -322,6 +333,9 @@ export default function App() {
             zones={zones}
             onDeleteRecord={handleDeleteRecord}
             onViewImage={handleViewImage}
+            isAdminAuthenticated={isAdminAuthenticated}
+            onOpenAdminLogin={() => setShowAdminLoginModal(true)}
+            onResetAllInspections={handleResetAllInspections}
           />
         )}
 

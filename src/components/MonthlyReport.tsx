@@ -11,6 +11,7 @@ import {
   AlertOctagon,
   Eye,
   Trash2,
+  RotateCcw,
 } from 'lucide-react';
 import { InspectionRecord, Zone } from '../types';
 import { formatThaiDate, formatThaiTime, exportToCSV } from '../utils/helpers';
@@ -20,6 +21,9 @@ interface MonthlyReportProps {
   zones: Zone[];
   onDeleteRecord: (id: string) => void;
   onViewImage: (imageUrl: string, title: string, subtitle?: string) => void;
+  isAdminAuthenticated: boolean;
+  onOpenAdminLogin: () => void;
+  onResetAllInspections: () => void;
 }
 
 export const MonthlyReport: React.FC<MonthlyReportProps> = ({
@@ -27,6 +31,9 @@ export const MonthlyReport: React.FC<MonthlyReportProps> = ({
   zones,
   onDeleteRecord,
   onViewImage,
+  isAdminAuthenticated,
+  onOpenAdminLogin,
+  onResetAllInspections,
 }) => {
   const [timeRange, setTimeRange] = useState<'all' | 'thisMonth' | 'last7Days'>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -179,6 +186,32 @@ export const MonthlyReport: React.FC<MonthlyReportProps> = ({
           >
             <Download className="w-4 h-4" />
             <span>ดาวน์โหลด CSV</span>
+          </button>
+
+          {/* Admin Reset All Statistics & Inspections Button */}
+          <button
+            onClick={() => {
+              if (!isAdminAuthenticated) {
+                onOpenAdminLogin();
+              } else {
+                if (confirm('คุณต้องการรีเซ็ตประวัติการตรวจและสถิติการสรุปผลทั้งหมดใช่หรือไม่? (การกระทำนี้จะล้างข้อมูลการตรวจทั้งหมด)')) {
+                  onResetAllInspections();
+                }
+              }
+            }}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition border cursor-pointer ${
+              isAdminAuthenticated
+                ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 border-rose-200'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border-slate-200'
+            }`}
+            title={
+              isAdminAuthenticated
+                ? 'รีเซ็ตประวัติการตรวจและสถิติทั้งหมด (เฉพาะแอดมิน)'
+                : 'เข้าสู่ระบบแอดมินเพื่อรีเซ็ตสถิติ'
+            }
+          >
+            <RotateCcw className="w-4 h-4" />
+            <span>{isAdminAuthenticated ? 'รีเซ็ตข้อมูลสถิติทั้งหมด' : 'รีเซ็ตสถิติ (แอดมิน)'}</span>
           </button>
         </div>
       </div>

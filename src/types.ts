@@ -1,4 +1,4 @@
-export type InspectorRole = 'student' | 'committee' | 'admin';
+export type InspectorRole = 'committee' | 'admin';
 
 export interface InspectionCriteria {
   litterFree: boolean;        // ความสะอาดพื้น ไร้เศษขยะและใบไม้
@@ -32,7 +32,6 @@ export interface Zone {
 }
 
 export const ROLE_LABELS: Record<InspectorRole, string> = {
-  student: 'นักเรียนเวร / สารวัตรนักเรียน',
   committee: 'กรรมการสภานักเรียน',
   admin: 'ผู้ดูแลระบบ / ฝ่ายบริหาร',
 };
